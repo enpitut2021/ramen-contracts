@@ -8,6 +8,10 @@ contract Proxy {
         pure
         returns (bool)
     {
+        require(
+            signature.length == message.length,
+            "Signature and message must be the same length" // 嘘です
+        );
         return true;
     }
 }

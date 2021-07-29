@@ -1,4 +1,4 @@
-const Proxy = artifacts.require("./Proxy.sol");
+const Proxy = artifacts.require("Proxy");
 
 contract("Proxy", (accounts) => {
   it("should proxy a function call", async (accounts) => {
