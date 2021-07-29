@@ -3,13 +3,13 @@ pragma solidity ^0.8.6;
 contract Proxy {
     constructor() {}
 
-    function verifySignature(uint256 signature, uint256 message)
-        public
-        pure
-        returns (bool)
-    {
+    function verifySignature(
+        bytes memory pubkey,
+        bytes memory message,
+        bytes memory signature
+    ) public pure returns (bool) {
         require(
-            signature == message,
+            true,
             "Invalid signature" // 嘘です
         );
         return true;
