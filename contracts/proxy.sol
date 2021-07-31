@@ -19,13 +19,30 @@ contract Proxy {
         // -------------------------------------------
 
         function callBigModExp(bytes memory base, bytes memory exponent, bytes memory modulus) public returns (bytes memory result) {
+            bytes memory input = join(base,exponent,modulus);
+            uint inputlen = input.length;//256*3+2048*3
+            uint decipherlen = modulus.length;//2048
+            bytes memory decipher = new bytes(decipherlen);
             assembly {
+                let success := staticcall(gas, 0x05, add(0x300,input), inputlen, decipher, decipherlen)
+                switch success
+                case 0 {
+                    revert(0x0, 0x0)
+                } default {
+                    result := decipher[0]
+                }
+                //メモ
+                /*
+                    0x20 = 32
+                    0x40 = 64
+                    mload(p) : mem[p...(p+32))
+                    mstore(p,v) : mem[p...(p+32)) := v
+
+                */
                 // free memory pointer
-                let memPtr := mload(0x40)
+                /*let memPtr := mload(0x40)
 
                 // length of base, exponent, modulus
-                // テストコードでまずテスト
-                // s
                 mstore(memPtr, 0x20)
                 mstore(add(memPtr, 0x20), 0x20)
                 mstore(add(memPtr, 0x40), 0x20)
@@ -42,7 +59,11 @@ contract Proxy {
                     revert(0x0, 0x0)
                 } default {
                     result := mload(memPtr)
-                }
+                }*/
+                
+                
+                // call the precompiled contract BigModExp (0x05)
+                
             }
         }
         // bに対応
@@ -52,6 +73,7 @@ contract Proxy {
         // 変数の入れ方とか細かいところわからないからお願いします。
         // -------------------------------------------
         uint m;
+        
         function makeM(bytes _s, bytes _e, bytes _n) pure public returns(bytes){
             if(s>n-1){
                 return "署名代表が範囲外です";
@@ -124,3 +146,4 @@ contract Proxy {
         return true;
     }
 }
+
