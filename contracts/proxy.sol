@@ -15,3 +15,5 @@ contract Proxy {
         return true;
     }
 }
+
+//jeong　練習
