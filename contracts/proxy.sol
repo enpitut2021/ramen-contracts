@@ -3,69 +3,93 @@ pragma solidity ^0.8.6;
 contract Proxy {
     constructor() {}
 
+    //認証部分　rfc8017 8.2.2 参照
+    //https://datatracker.ietf.org/doc/html/rfc8017#page-35
     function verifySignature{
         bytes memory pubkey,
         bytes memory message,
         bytes memory signature;
-                        // 公開鍵を分解する n,e (省略)
-                        
-                        // s = OS2IP(バイト列を数値に変換する場所) (省略)
+                                                        // 公開鍵を分解する n,e (省略)
+                                                        
+                                                        //s = OS2IP(バイト列を数値に変換する場所) (8.2.2の2のa,省略)
         
         // RSAVP1の適用を書く場所 solidityではEIP198で計算。
         // define callBigModExp
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////       "EIP-198"                                                                           ////
+        /////       function callBigModExp(s,e,n) return (s^e mod n)                                    ////
+        /////                                                                                           ////
+        /////           memcpy(),join() are used by callBigModExp()                                     ////
+        /////                                                                                           ////
+        /////       "reference"                                                                         ////
+        /////        https://github.com/adria0/SolRsaVerify/blob/master/contracts/SolRsaVerify.sol      ////
+        /////        https://solidity-jp.readthedocs.io/ja/latest/assembly.html                         ////
+        /////        https://ethervm.io/                                                                ////
+        //////////////////////////////////////////////////////////////////////////////////////////////////// 
 
-        // -------------------------------------------
-        // 固定長の部分直しておいて欲しいわ 
-        // -------------------------------------------
-
-        function callBigModExp(bytes memory base, bytes memory exponent, bytes memory modulus) public returns (bytes memory result) {
-            bytes memory input = join(base,exponent,modulus);
-            uint inputlen = input.length;//256*3+2048*3
-            uint decipherlen = modulus.length;//2048
-            bytes memory decipher = new bytes(decipherlen);
-            assembly {
-                let success := staticcall(gas, 0x05, add(0x300,input), inputlen, decipher, decipherlen)
-                switch success
-                case 0 {
-                    revert(0x0, 0x0)
-                } default {
-                    result := decipher[0]
+        function memcpy(uint _dest, uint _src, uint _len) pure internal {
+            // Copy word-length chunks while possible
+            for ( ;_len >= 32; _len -= 32) {
+                assembly {
+                    mstore(_dest, mload(_src))
                 }
-                //メモ
-                /*
-                    0x20 = 32
-                    0x40 = 64
-                    mload(p) : mem[p...(p+32))
-                    mstore(p,v) : mem[p...(p+32)) := v
-
-                */
-                // free memory pointer
-                /*let memPtr := mload(0x40)
-
-                // length of base, exponent, modulus
-                mstore(memPtr, 0x20)
-                mstore(add(memPtr, 0x20), 0x20)
-                mstore(add(memPtr, 0x40), 0x20)
-
-                // assign base, exponent, modulus
-                mstore(add(memPtr, 0x60), base)
-                mstore(add(memPtr, 0x80), exponent)
-                mstore(add(memPtr, 0xa0), modulus)
-
-                // call the precompiled contract BigModExp (0x05)
-                let success := call(gas, 0x05, 0x0, memPtr, 0xc0, memPtr, 0x20)
-                switch success
-                case 0 {
-                    revert(0x0, 0x0)
-                } default {
-                    result := mload(memPtr)
-                }*/
-                
-                
-                // call the precompiled contract BigModExp (0x05)
-                
+                _dest += 32;
+                _src += 32;
             }
+            // Copy remaining bytes
+            uint mask = 256 ** (32 - _len) - 1;
+            assembly {
+                let srcpart := and(mload(_src), not(mask))
+                let destpart := and(mload(_dest), mask)
+                mstore(_dest, or(destpart, srcpart))
+            }
+        }   
+        function join(bytes memory _s, bytes memory _e, bytes memory _m) pure internal returns (bytes memory) {
+            uint inputLen = 0x60+_s.length+_e.length+_m.length;
+            uint slen = _s.length;
+            uint elen = _e.length;
+            uint mlen = _m.length;
+            uint sptr;
+            uint eptr;
+            uint mptr;
+            uint inputPtr;
+            bytes memory input = new bytes(inputLen);
+            assembly {
+                sptr := add(_s,0x20)
+                eptr := add(_e,0x20)
+                mptr := add(_m,0x20)
+                mstore(add(input,0x20),slen)
+                mstore(add(input,0x40),elen)
+                mstore(add(input,0x60),mlen)
+                inputPtr := add(input,0x20)
+            }
+            memcpy(inputPtr+0x60,sptr,_s.length);        
+            memcpy(inputPtr+0x60+_s.length,eptr,_e.length);        
+            memcpy(inputPtr+0x60+_s.length+_e.length,mptr,_m.length);
+            return input;
         }
+        function callBigModExp(bytes memory base, bytes memory exponent, bytes memory modulus) public returns (bytes memory result) {
+                bytes memory input = join(base,exponent,modulus);
+                uint inputlen = input.length;
+                uint decipherlen = modulus.length;
+                bytes memory decipher = new bytes(decipherlen);
+                assembly {
+                    let success := staticcall(gas, 5, add(input,0x20), inputlen, add(decipher,0x20), decipherlen)
+                    switch success
+                    case 0 {
+                        revert(0x0, 0x0)
+                    } default {
+                        result := decipher
+                    }
+                }
+        }
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+        /////     8.2.2 の 2 の b                                                                        ////
+        /////                                                                                           ////
+        /////                                                                                           ////
+        /////                                                                                           ////
+        ////////////////////////////////////////////////////////////////////////////////////////////////////
+
         // bに対応
         // -------------------------------------------
         // makeMの署名代表が範囲外の所を画面に出力できるようにしたい
