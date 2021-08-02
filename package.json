@@ -1,9 +1,34 @@
 {
+  "name": "ramen",
+  "version": "0.0.1",
+  "description": "",
+  "main": "_test.js",
   "scripts": {
-    
+    "test": "hardhat test"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/enpitut2021/ramen-contracts.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/enpitut2021/ramen-contracts/issues"
+  },
+  "homepage": "https://github.com/enpitut2021/ramen-contracts#readme",
   "dependencies": {
-    "ganache-cli": "^6.12.2",
-    "truffle": "^5.4.2"
+    "hardhat": "^2.5.0"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@types/chai": "^4.2.21",
+    "@types/mocha": "^9.0.0",
+    "@types/node": "^16.4.10",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.4.3",
+    "ts-node": "^10.1.0",
+    "typescript": "^4.3.5"
   }
 }
