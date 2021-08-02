@@ -12,7 +12,7 @@ describe("Proxy(Initialization)", () => {
   it("should be able to create a proxy", async () => {
     const Verifier = await ethers.getContractFactory("Verifier");
     const verifier = await Verifier.deploy();
-    const Proxy = await ethers.getContractFactory("Proxy", {
+    const Proxy = await ethers.getContractFactory("ProxyMock", {
       libraries: {
         Verifier: verifier.address,
       },
@@ -41,7 +41,7 @@ describe("Proxy(Approve)", () => {
 
     const Verifier = await ethers.getContractFactory("Verifier");
     const verifier = await Verifier.deploy();
-    const Proxy = await ethers.getContractFactory("Proxy", {
+    const Proxy = await ethers.getContractFactory("ProxyMock", {
       libraries: {
         Verifier: verifier.address,
       },

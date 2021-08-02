@@ -19,7 +19,7 @@ describe("ProxyMock2", () => {
 
     const Verifier = await ethers.getContractFactory("Verifier");
     const verifier = await Verifier.deploy();
-    const Proxy = await ethers.getContractFactory("Proxy", {
+    const Proxy = await ethers.getContractFactory("ProxyMock", {
       libraries: {
         Verifier: verifier.address,
       },
