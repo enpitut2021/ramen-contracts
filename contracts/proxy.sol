@@ -202,8 +202,6 @@ contract Proxy {
 
 
 contract mynumberContract{
-    // signatureの型分からない
-    // pubkeyはconstractで書く、後でかく
     // arg = calldata
 
     // bytes n;
@@ -218,35 +216,26 @@ contract mynumberContract{
     //     owner = msg.sender;
     //     createAt = block.timestamp;
     // }
-    // bytes signature = 0x866B66D33D512E5D4BBE37A92EFE3B94FAC8C36A914A4E18CA265F60FD10EF99BE3ECA7D1DB6726FEB2CEAA13A8D4162DD54AE605BBA73CF5ACE1F944901791C14B2E73CCD1271CE8D28B6EF2E0452703B8CD26B5CAA16DE695B0C239FBACC3B63B57358EF8794C84EF5FFEA2C54593CA3533E6FAFBB1A966D0730F1F2ACDFF7FC84786A89DE95AFA595D4589F6CE7DFF017193F8E2540684778277B7C2AB0F0F8324B7A355990CAF459948B6B5B97F6F00D0684178A84328A88384904FD5723BC51A0532053E39B996366B440177585ABCE3D163FE0C544CF9BA0E4FAEEB282460BF2B009A0AFC217430434C27941EF3123095BA0D19E6C10DCB4046201159B";
-    // arg= "0xdfc0d6e1000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000002003836364236364433334435313245354434424245333741393245464533423934464143384333364139313441344531384341323635463630464431304546393942453345434137443144423637323646454232434541413133413844343136324444353441453630354242413733434635414345314639343439303137393143313442324537334343443132373143453844323842364546324530343532373033423843443236423543414131364445363935423043323339464241434333423633423537333538454638373934433834454635464645413243353435393343413335333345364641464242314139363644303733304631463241434446463746433834373836413839444539354146413539354434353839463643453744464630313731393346384532353430363834373738323737423743324142304630463833323442374133353539393043414634353939343842364235423937463646303044303638343137384138343332384138383338343930344644353732334243353141303533323035334533394239393633363642343430313737353835414243453344313633464530433534344346394241304534464145454232383234363042463242303039413041464332313734333034333443323739343145463331323330393542413044313945364331304443423430343632303131353942"
-    
-    // function testAbi() public returns (bytes memory){
-    //     bytes memory  arr = signature;
-    //     return abi.encodeWithSignature("bar(bytes memory)",arr);
-    // }
-    function callSetNum(bytes memory message, address proxy, address destination, bytes memory arg, bytes memory signature, bytes memory e, bytes memory n) public returns (string memory){
-
+    function proxy(bytes memory message, address proxy, address destination, bytes memory arg, bytes memory signature, bytes memory e, bytes memory n) public{
+        // uint amaout = 1;
         Proxy a = Proxy(proxy);
         // bytes memory message = abi.encodePacked(destination, arg);
         bytes memory call_data = abi.encodeWithSignature("foo(bytes memory)",signature);
-        Destination b = Destination(destination);
-        if(a.verifySignature(message,signature,e,n)){
-            (bool success, bytes memory retArg) = destination.call(arg);
-            return b.setNum();
-        }  
-        (bool success, bytes memory retArg) = destination.call(arg);
-        return "sorry";
+        
+        require(a.verifySignature(message,signature,e,n), "fail");
+            // destination.transfer(uint amount);
+        // (bool success, bytes memory retArg) = destination.call(arg);
+        return;
         
     }
 }
 
 
-contract Destination {
-    address public sender;
+// contract Destination {
+//     address public sender;
 
-    function setNum() public returns (string memory) {
-        sender = msg.sender;
-        return "OK";
-    }
-}
+//     function setNum() public returns (string memory) {
+//         sender = msg.sender;
+//         return "OK";
+//     }
+// }
