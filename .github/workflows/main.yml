@@ -4,11 +4,8 @@ jobs:
   Test:
     runs-on: ubuntu-latest
     steps:
-    # recipe
+      # recipe
       - name: Check out repository code
         uses: actions/checkout@v2
       - run: npm install
-      - run: npx ganache-cli &
-      - run: npx truffle compile
-      - run: npx truffle migrate
-      - run: npx truffle test
+      - run: npm test
